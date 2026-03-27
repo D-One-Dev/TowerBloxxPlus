@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Zenject;
 
 [RequireComponent(typeof(PolygonCollider2D))]
 [RequireComponent(typeof(Rigidbody2D))]
@@ -21,6 +22,14 @@ public class PhysicsEntity : MonoBehaviour
     //list of convex polygons
     [HideInInspector] public List<Vector2[]> decomposedParts = new List<Vector2[]>();
 
+    private EventHandler _eventHandler;
+
+    [Inject]
+    public void Construct(EventHandler eventHandler)
+    {
+        _eventHandler = eventHandler;
+    }
+
     void Awake()
     {
         if (polygonCollider == null) polygonCollider = GetComponent<PolygonCollider2D>();
@@ -35,6 +44,8 @@ public class PhysicsEntity : MonoBehaviour
             var convexParts = ConvexDecomposer.SplitToConvex(path);
             decomposedParts.AddRange(convexParts);
         }
+
+        _eventHandler.RegisterPhysicsEntity(this);
     }
 
     //transform a part's local coords to global

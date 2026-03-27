@@ -186,6 +186,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d79d438d85ed0c641ac2922047262ee0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PhysicsEntity
-  Velocity: {x: 0, y: -1}
-  PolygonCollider: {fileID: 3405075667081309809}
-  RB: {fileID: 6305959799805933087}
+  velocity: {x: 0, y: -3}
+  polygonCollider: {fileID: 0}
+  rb: {fileID: 0}
+  isFixed: 0
+  simulated: 1

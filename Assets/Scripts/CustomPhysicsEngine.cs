@@ -1,19 +1,30 @@
 using UnityEngine;
 using System.Collections.Generic;
 using static ContinuousCollision2D;
+using Zenject;
+using System;
 
-public class CustomPhysicsEngine : MonoBehaviour
+public class CustomPhysicsEngine: IFixedTickable, IDisposable
 {
-    [SerializeField] private List<PhysicsEntity> entities;
+    private List<PhysicsEntity> _entities;
+    private EventHandler _eventHandler;
 
-    private void Awake()
+    [Inject]
+    public void Construct(EventHandler eventHandler)
     {
-        entities.RemoveAll(i => i == null);
+        _eventHandler = eventHandler;
+        _eventHandler.OnRegisterPhysicsEntity += RegisterPhysicsEntity;
     }
 
-    private void FixedUpdate()
+    private void RegisterPhysicsEntity(PhysicsEntity entity)
     {
-        foreach (PhysicsEntity entity in entities)
+        _entities ??= new List<PhysicsEntity>();
+        _entities.Add(entity);
+    }
+
+    public void FixedTick()
+    {
+        foreach (PhysicsEntity entity in _entities)
         {
             PerformMovement(entity);
         }
@@ -26,7 +37,7 @@ public class CustomPhysicsEngine : MonoBehaviour
 
         Vector2 movementStep = a.Velocity * Time.fixedDeltaTime;
 
-        foreach (PhysicsEntity b in entities)
+        foreach (PhysicsEntity b in _entities)
         {
             if (a == b || !a.Simulated) continue;
 
@@ -62,6 +73,7 @@ public class CustomPhysicsEngine : MonoBehaviour
                 a.PolygonCollider.enabled = true;
                 a.SetSimulated(false);
                 a.RB.simulated = true;
+                _eventHandler.SpawnBlock();
             }
         }
         else
@@ -69,5 +81,10 @@ public class CustomPhysicsEngine : MonoBehaviour
             //free movement if no collision
             a.transform.position += (Vector3)movementStep;
         }
+    }
+
+    public void Dispose()
+    {
+        _eventHandler.OnRegisterPhysicsEntity -= RegisterPhysicsEntity;
     }
 }
